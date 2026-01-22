@@ -1,0 +1,62 @@
+[
+  {
+    "id": "jenkins-ci",
+    "title": "Jenkins CI/CD: Complete Guide to Continuous Integration & Deployment",
+    "author": "Rajesh Kumar",
+    "date": "2026-01-20",
+    "category": "DevOps",
+    "tags": ["Jenkins", "CI/CD", "DevOps"],
+    "excerpt": "Learn how to set up Jenkins pipelines, automate builds, and deploy applications with confidence. A comprehensive guide for DevOps engineers.",
+    "content": "This blog explains how we implemented Jenkins CI/CD pipelines in production. We use declarative pipelines, shared libraries, and integrate with GitHub webhooks for automated builds. Our pipeline includes stages for build, test, scan, and deploy across multiple environments including AWS EKS and Azure AKS."
+  },
+  {
+    "id": "grafana-monitoring",
+    "title": "Grafana Monitoring: Build Beautiful Dashboards for Your Infrastructure",
+    "author": "Priya Sharma",
+    "date": "2026-01-21",
+    "category": "Monitoring",
+    "tags": ["Grafana", "Monitoring", "Dashboards"],
+    "excerpt": "Master Grafana to create stunning visualizations, set up alerts, and monitor your entire infrastructure effectively.",
+    "content": "This blog covers Grafana dashboards and monitoring best practices. We use Prometheus as the data source, configure alert rules, and visualize metrics for Kubernetes clusters across AWS, Azure, and GCP. Alerts are routed to Slack and PagerDuty for real-time incident response."
+  },
+  {
+    "id": "kubernetes-deployment",
+    "title": "Kubernetes Deployment Strategies: Rolling, Blue-Green, and Canary",
+    "author": "Amit Patel",
+    "date": "2026-01-22",
+    "category": "Kubernetes",
+    "tags": ["Kubernetes", "Deployment", "Blue-Green"],
+    "excerpt": "Explore different Kubernetes deployment strategies and learn when to use each one for zero-downtime releases.",
+    "content": "Learn how to implement rolling updates, blue-green deployments, and canary releases in Kubernetes. We cover Helm charts, Argo Rollouts, and Istio for advanced traffic management."
+  },
+  {
+    "id": "terraform-iac",
+    "title": "Terraform IaC: Managing Cloud Infrastructure the Right Way",
+    "author": "Sneha Gupta",
+    "date": "2026-01-23",
+    "category": "Cloud",
+    "tags": ["Terraform", "IaC", "AWS"],
+    "excerpt": "Learn Infrastructure as Code with Terraform. Provision AWS, Azure, and GCP resources with declarative configurations.",
+    "content": "This blog explains how to use Terraform to manage infrastructure across multiple clouds. We cover modules, state management, and best practices for production-grade IaC."
+  },
+  {
+    "id": "docker-containerization",
+    "title": "Docker Containerization: From Zero to Production",
+    "author": "Vikram Singh",
+    "date": "2026-01-24",
+    "category": "Containers",
+    "tags": ["Docker", "Containers", "Production"],
+    "excerpt": "Master Docker fundamentals, create efficient images, and deploy containerized applications with confidence.",
+    "content": "Learn how to write secure, efficient Dockerfiles. Use multi-stage builds, non-root users, and minimal base images like distroless. Always scan images for vulnerabilities using Trivy or Clair before pushing to registry."
+  },
+  {
+    "id": "prometheus-alerting",
+    "title": "Prometheus Alerting: Set Up Intelligent Monitoring Alerts",
+    "author": "Ananya Reddy",
+    "date": "2026-01-25",
+    "category": "Monitoring",
+    "tags": ["Prometheus", "Alerting", "Monitoring"],
+    "excerpt": "Configure Prometheus alerts, integrate with Alertmanager, and never miss critical issues in your infrastructure.",
+    "content": "This blog covers how to set up Prometheus alerting rules, configure Alertmanager for routing, and integrate with Slack and PagerDuty for real-time notifications."
+  }
+]
