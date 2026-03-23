@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- 1. HELPER FUNCTIONS ---
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper to safely get user data
+    function getUserData() {
+       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // "Staff" check: Combines DB role check AND hardcoded system emails for reliability
+    function isStaff() {
+      return isAuthenticated() && (
+        request.auth.token.email in ['keerthana.s@cloudmasa.com', 'support@cloudmasa.com', 'info@cloudmasa.com'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         getUserData().role in ['superadmin', 'admin', 'support'])
+      );
+    }
+
+    // "Privileged" check
+    function isPrivileged() {
+      return isAuthenticated() && (
+        request.auth.token.email in ['keerthana.s@cloudmasa.com', 'support@cloudmasa.com'] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         getUserData().role in ['superadmin', 'admin'])
+      );
+    }
+
+    function isSuperAdmin() {
+       return isAuthenticated() && (
+         request.auth.token.email == 'keerthana.s@cloudmasa.com' ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          getUserData().role == 'superadmin')
+       );
+    }
+
+    // --- 2. ROOT APPLICATIONS COLLECTION ---
+    
+    match /applications/{appId} {
+      // READ: Staff or Owner
+      allow read: if isAuthenticated() && (isStaff() || resource.data.userId == request.auth.uid);
+      
+      // CREATE: Authenticated users
+      allow create: if isAuthenticated();
+      
+      // UPDATE: Staff only
+      allow update: if isStaff();
+      
+      // DELETE: SuperAdmin only
+      allow delete: if isSuperAdmin();
+    }
+
+    // --- 3. USERS COLLECTION RULES ---
+
+    match /users/{userId} {
+      // READ: Owner or Staff
+      allow read: if isOwner(userId) || isStaff();
+      
+      // CREATE: Owner or Privileged
+      allow create: if isOwner(userId) || isPrivileged();
+
+      // UPDATE: 
+      allow update: if 
+        isSuperAdmin() 
+        || 
+        (isPrivileged() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'role', 'isExpert']))
+        || 
+        (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status', 'isExpert']));
+
+      // DELETE: SuperAdmin only
+      allow delete: if isSuperAdmin();
+
+      // --- SUBCOLLECTION: DOCUMENTS ---
+      match /documents/{docId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isOwner(userId) || isStaff();
+      }
+
+      // --- SUBCOLLECTION: FOLDERS ---
+      match /folders/{folderId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isOwner(userId) || isStaff();
+      }
+      
+      // --- SUBCOLLECTION: NOTIFICATIONS ---
+      match /notifications/{notifId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow write: if isOwner(userId) || isStaff();
+      }
+    }
+
+    // --- 4. INVITES COLLECTION RULES ---
+
+    match /invites/{inviteId} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow create: if isPrivileged();
+      allow update: if isPrivileged() || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'status']);
+      allow delete: if isPrivileged();
+    }
+    
+    // --- 5. SYSTEM STATS ---
+    match /stats/{statId} {
+       allow read: if isStaff();
+    }
+  }
+}

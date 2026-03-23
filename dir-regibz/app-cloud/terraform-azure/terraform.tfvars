@@ -1,0 +1,7 @@
+location = "westus"
+subscription_id = "6978d0f2-8d32-4e62-b8e3-9a3f696c707d"
+resource_group_name = "vecnacloud-rg"
+prefix = "vecnacloud"
+module_to_deploy = "azure_queuestorage"
+queue_storage_account_name = "vecnacloud"
+queue_name = "defaultqueue"
