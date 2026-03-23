@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Helper Functions ---
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    
+    function isSuperAdmin() {
+      return request.auth != null && request.auth.token.email == 'keerthana.s@cloudmasa.com';
+    }
+
+    function hasAdminRole() {
+       return request.auth != null && 
+              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin'];
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || hasAdminRole();
+    }
+
+    function isSupport() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'support';
+    }
+
+    // --- Rules ---
+
+    // Users Collection
+    match /users/{uid} {
+      // READ: Owner first (cheapest), then Admin/Support
+      allow read: if isOwner(uid) || isAdmin() || isSupport();
+      
+      // CREATE: 
+      allow create: if isOwner(uid) || isSuperAdmin();
+
+      // UPDATE:
+      allow update: if isSuperAdmin() || 
+                    isAdmin() || 
+                    (isOwner(uid) && request.resource.data.role == resource.data.role && request.resource.data.status == resource.data.status);
+    }
+
+    // Invites Collection
+    match /invites/{token} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (request.auth != null && request.resource.data.used == true && resource.data.used == false);
+      allow delete: if isAdmin();
+    }
+
+    // Service Documents Subcollection
+    match /users/{uid}/documents/{docId} {
+      allow read: if isOwner(uid) || isAdmin() || isSupport();
+      allow write: if isOwner(uid) || isAdmin(); 
+    }
+
+    // Folders Subcollection
+    match /users/{uid}/folders/{folderId} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
+    // Notifications Subcollection
+    match /users/{uid}/notifications/{notifId} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) || isAdmin(); // Admin might send notif
+    }
+
+    // Global Collections
+    match /gstApplications/{id} {
+      allow read: if resource.data.userId == request.auth.uid || isAdmin() || isSupport();
+      allow write: if request.auth.uid != null;
+    }
+    
+    match /mail/{mailId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+    }
+  }
+}
